@@ -1,0 +1,22 @@
+{
+    "port": 8080,
+    "host": "localhost",
+    "root": ".",
+    "cors": true,
+    "headers": {
+        "Cross-Origin-Embedder-Policy": "require-corp",
+        "Cross-Origin-Opener-Policy": "same-origin"
+    },
+    "mimeTypes": {
+        "html": "text/html",
+        "js": "application/javascript",
+        "css": "text/css"
+    },
+    "files": [
+        "index.html",
+        "status.html",
+        "horse.js",
+        "favicon.ico"
+    ],
+    "defaultFile": "index.html"
+}

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>3D Horse Status Check</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 20px auto; padding: 0 20px; }
+        .error { color: red; }
+        .success { color: green; }
+        .note { background: #fff3cd; padding: 10px; border-radius: 4px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>3D Horse Dependencies Status</h1>
+    <div class="note">
+        <strong>Note:</strong> If you're seeing CORS errors in the console, make sure you're running the application through a web server and not opening files directly.
+        <br><br>
+        <strong>Supported Browsers:</strong>
+        <ul>
+            <li>Chrome 90+</li>
+            <li>Firefox 88+</li>
+            <li>Safari 14+</li>
+            <li>Edge 90+</li>
+        </ul>
+    </div>
+    <div id="status"></div>
+
+    <!-- Load THREE.js from official CDN -->
+    <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+    <!-- Load OrbitControls after THREE.js -->
+    <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script>
+        const status = document.getElementById('status');
+        
+        function addStatus(message, isError = false) {
+            const p = document.createElement('p');
+            p.style.color = isError ? 'red' : 'green';
+            p.textContent = message;
+            status.appendChild(p);
+        }
+
+        // Check THREE.js
+        if (typeof THREE !== 'undefined') {
+            addStatus('✓ THREE.js loaded successfully');
+        } else {
+            addStatus('✗ THREE.js failed to load', true);
+        }
+
+        // Check OrbitControls
+        if (typeof THREE !== 'undefined' && typeof THREE.OrbitControls !== 'undefined') {
+            addStatus('✓ OrbitControls loaded successfully');
+        } else {
+            addStatus('✗ OrbitControls failed to load', true);
+        }
+
+        // Check WebGL
+        if (typeof THREE !== 'undefined') {
+            if (THREE.WebGLRenderer.isWebGLAvailable()) {
+                addStatus('✓ WebGL is available');
+            } else {
+                addStatus('✗ WebGL is not available', true);
+            }
+        }
+
+        // Check if horse.js is accessible
+        fetch('horse.js')
+            .then(() => addStatus('✓ horse.js is accessible'))
+            .catch(() => addStatus('✗ horse.js is not accessible', true));
+    </script>
+</body>
+</html>

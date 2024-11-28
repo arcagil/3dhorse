@@ -5,7 +5,10 @@
   "main": "horse.js",
   "scripts": {
     "test": "jest",
-    "start": "http-server . -p 8080"
+    "start": "http-server . -p 8080 -c-1 --cors",
+    "start:python": "python -m http.server 8080",
+    "check": "open http://localhost:8080/status.html",
+    "open": "open http://localhost:8080"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.16.0",
