@@ -8,15 +8,57 @@
     </style>
 </head>
 <body>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <!-- Load THREE.js from official CDN -->
+    <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+    <!-- Load OrbitControls after THREE.js -->
+    <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="horse.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             try {
+                if (window.horseRenderer) {
+                    window.horseRenderer.cleanup();
+                }
+                
+                // Create and store the renderer instance
                 window.horseRenderer = new HorseRenderer();
+                console.log('Horse renderer initialized successfully');
+                
+                // Start the animation loop
+                function animate() {
+                    if (window.horseRenderer) {
+                        try {
+                            requestAnimationFrame(animate);
+                            window.horseRenderer.animate();
+                        } catch (error) {
+                            console.error('Animation error:', error);
+                            // Stop animation loop and cleanup
+                            window.horseRenderer.cleanup();
+                            window.horseRenderer = null;
+                            // Show error to user
+                            const errorDiv = document.createElement('div');
+                            errorDiv.style.cssText = 'position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(255,0,0,0.8); color:white; padding:20px; border-radius:5px; text-align:center;';
+                            errorDiv.innerHTML = `
+                                <h3>Animation Error</h3>
+                                <p>${error.message}</p>
+                                <p>The animation has been stopped.</p>
+                            `;
+                            document.body.appendChild(errorDiv);
+                        }
+                    }
+                }
+                animate();
             } catch (error) {
                 console.error('Failed to initialize horse renderer:', error);
+                // Display error to user
+                const errorDiv = document.createElement('div');
+                errorDiv.style.cssText = 'position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(255,0,0,0.8); color:white; padding:20px; border-radius:5px; text-align:center;';
+                errorDiv.innerHTML = `
+                    <h3>Error Initializing 3D Horse</h3>
+                    <p>${error.message}</p>
+                    <p>Please check that your browser supports WebGL and 3D graphics.</p>
+                `;
+                document.body.appendChild(errorDiv);
             }
         });
     </script>

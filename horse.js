@@ -1,5 +1,12 @@
 class HorseRenderer {
     constructor() {
+        // Define leg positions as a class property
+        this.legPositions = [
+            [-1.0, -1.5, 0.3],  // Front left
+            [-1.0, -1.5, -0.3], // Front right
+            [1.0, -1.5, 0.3],   // Back left
+            [1.0, -1.5, -0.3]   // Back right
+        ];
         try {
             console.log('Initializing 3D Horse...');
             this.initScene();
@@ -12,11 +19,73 @@ class HorseRenderer {
             this.animate();
         } catch (error) {
             console.error('Error initializing 3D Horse:', error);
+            this.cleanup();
             throw error;
         }
     }
 
+    cleanup() {
+        // Dispose of geometries and materials
+        if (this.bodyParts) {
+            Object.values(this.bodyParts).forEach(part => {
+                if (Array.isArray(part)) {
+                    part.forEach(mesh => {
+                        if (mesh.geometry) mesh.geometry.dispose();
+                        if (mesh.material) mesh.material.dispose();
+                    });
+                } else if (part && part.geometry) {
+                    part.geometry.dispose();
+                    if (part.material) part.material.dispose();
+                }
+            });
+        }
+
+        // Dispose of ground
+        if (this.ground) {
+            if (this.ground.geometry) this.ground.geometry.dispose();
+            if (this.ground.material) this.ground.material.dispose();
+        }
+
+        // Remove the canvas if it was added to the document
+        if (this.renderer) {
+            this.renderer.dispose();
+            if (this.renderer.domElement) {
+                this.renderer.domElement.remove();
+            }
+        }
+        
+        // Remove event listeners
+        if (this.resizeHandler) {
+            window.removeEventListener('resize', this.resizeHandler);
+        }
+
+        // Clear all references
+        this.scene = null;
+        this.camera = null;
+        this.renderer = null;
+        this.controls = null;
+        this.horseMesh = null;
+        this.bodyParts = null;
+        this.ground = null;
+        this.resizeHandler = null;
+    }
+
     initScene() {
+        // Check if THREE.js is loaded
+        if (typeof THREE === 'undefined') {
+            throw new Error('THREE.js is not loaded. Please check your script includes.');
+        }
+
+        // Check if OrbitControls is available
+        if (typeof THREE.OrbitControls === 'undefined') {
+            throw new Error('THREE.OrbitControls is not loaded. Please check your script includes.');
+        }
+
+        // Check WebGL availability
+        if (!THREE.WebGLRenderer.isWebGLAvailable()) {
+            throw new Error('WebGL is not available in your browser. Please use a WebGL-enabled browser.');
+        }
+
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(0x87CEEB); // Sky blue background
         
@@ -36,7 +105,8 @@ class HorseRenderer {
         this.controls.dampingFactor = 0.05;
         
         // Handle window resize
-        window.addEventListener('resize', () => this.onWindowResize(), false);
+        this.resizeHandler = () => this.onWindowResize();
+        window.addEventListener('resize', this.resizeHandler, false);
     }
 
     onWindowResize() {
@@ -133,12 +203,6 @@ class HorseRenderer {
         });
         this.bodyParts.legs = [];
         
-        const legPositions = [
-            [-1.0, -1.5, 0.3],  // Front left
-            [-1.0, -1.5, -0.3], // Front right
-            [1.0, -1.5, 0.3],   // Back left
-            [1.0, -1.5, -0.3]   // Back right
-        ];
 
         // Create tail
         const tailGeometry = new THREE.BoxGeometry(0.2, 0.8, 0.2);
@@ -149,7 +213,7 @@ class HorseRenderer {
         this.bodyParts.tail = tail;
         this.horseMesh.add(tail);
 
-        legPositions.forEach(position => {
+        this.legPositions.forEach(position => {
             const leg = new THREE.Mesh(legGeometry, legMaterial);
             leg.castShadow = true;
             leg.position.set(...position);
@@ -159,7 +223,7 @@ class HorseRenderer {
     }
 
     animate() {
-        requestAnimationFrame(() => this.animate());
+        // Don't request animation frame here since it's handled in the HTML file
         this.updateHorsePosition();
         this.controls.update();
         this.renderer.render(this.scene, this.camera);
@@ -228,7 +292,7 @@ class HorseRenderer {
             const swingAngle = Math.sin(time * 2 + phaseOffset) * 0.2;
             
             // Get the original position for this leg
-            const [baseX, _, baseZ] = legPositions[index];
+            const [baseX, _, baseZ] = this.legPositions[index];
             
             // Move legs in an elliptical pattern
             leg.position.y = baseY + Math.abs(Math.sin(time * 2 + phaseOffset)) * 0.2;
@@ -238,9 +302,3 @@ class HorseRenderer {
         });
     }
 }
-
-// Initialize when loaded
-window.onload = () => {
-    const horseRenderer = new HorseRenderer();
-    horseRenderer.animate();
-};
